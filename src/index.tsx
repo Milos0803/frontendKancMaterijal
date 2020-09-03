@@ -8,14 +8,23 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {MainMenu,MainMenuItem} from './components/MainMenu/MainMenu';
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import ContactPage from './components/ContactPage/ContactPage';
+import CategoryPage from './components/CategoryPage/CategoryPage';
+import UserLoginpage from './components/UserLoginPage/UserLoginPage';
 
-
-
-const menuItems = [
-new MainMenuItem("Home", "/"),
-new MainMenuItem("Contact", "/contact/"),
-new MainMenuItem("Login", "/user/login/")
+const menuItems: MainMenuItem[] = [
+  new MainMenuItem("Početna", "/"),
+  new MainMenuItem("Contact", "/contact/"),
+  new MainMenuItem("Prijava", "/user/login/"),
+  new MainMenuItem("Category 1", "/category/1/"),
+  new MainMenuItem("Category 22", "/category/22/"),
+  new MainMenuItem("Category 31", "/category/31/"),
+  new MainMenuItem("Category 4", "/category/4/"),
+  
 ];
+
+
+
+
 
 ReactDOM.render(
   <React.StrictMode>
@@ -24,8 +33,8 @@ ReactDOM.render(
       <Switch>
         <Route exact path="/" component={ HomePage } />
         <Route path="/contact" component={ ContactPage } />
-        <Route path="/user/login" component={ HomePage } />
-        
+        <Route path="/user/login" component={ UserLoginpage } />
+        <Route path="/category/:cId" component={ CategoryPage } />
       </Switch>
     </HashRouter>
   </React.StrictMode>,
