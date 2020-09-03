@@ -1,11 +1,12 @@
 import React from 'react';
-import {Nav, Container} from 'react-bootstrap';
+import { Nav, Container } from 'react-bootstrap';
+import { Link, HashRouter } from 'react-router-dom';
 
 export class MainMenuItem {
     text: string = '';
-    link : string = '' ;
+    link: string = '';
 
-    constructor (text:string , link: string){
+    constructor(text: string, link: string) {
         this.text = text;
         this.link = link;
     }
@@ -15,45 +16,46 @@ interface MainMenuProperties {
     items: MainMenuItem[];
 }
 
-interface MainMenuState{
+interface MainMenuState {
     items: MainMenuItem[];
 }
 export class MainMenu extends React.Component<MainMenuProperties> {
-state: MainMenuState;
+    state: MainMenuState;
     constructor(props: Readonly<MainMenuProperties>) {
         super(props);
 
         this.state = {
-           items: props.items,
+            items: props.items,
 
         };
     }
 
-    setItems( items: MainMenuItem[]) {
+    setItems(items: MainMenuItem[]) {
         this.setState({
-            items:items,
+            items: items,
         });
     }
 
-render () {
-    return (
-        <Container>
-            <Nav variant="tabs">
-        { this.state.items.map(this.makeNavLink) }
-
-            </Nav>
-        </Container>
-
-    );
-}
-private makeNavLink(item: MainMenuItem){
-    return(
-        <Nav.Link href={ item.link}>
-                    {item.text}
-                </Nav.Link>
-    );
-
+    render() {
+        return (
+            <Container>
+                <Nav variant="tabs">
+                    <HashRouter>
+                        { this.state.items.map(this.makeMenuItem) }
+                    </HashRouter>
+                </Nav>
+            </Container>
+        );
+    }
     
-}
+    private makeMenuItem(item: MainMenuItem) {
+        return <Link to={item.link} className="nav-link">
+                {item.text}
+            </Link>;
+
+        
+
+
+    }
 
 }
