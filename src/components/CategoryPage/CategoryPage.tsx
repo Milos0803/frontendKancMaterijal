@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faListAlt, faSearch } from '@fortawesome/free-solid-svg-icons';
 import CategoryType from '../../types/CategoryType';
 import api, { ApiResponse } from '../../api/api';
-import ArticleType from '../../types/ArticleType';
 import { Redirect, Link } from 'react-router-dom';
+import ArticleType from '../../types/ArticleType';
 import SingleArticlePreview from '../SingleArticlePreview/SingleArticlePreview';
 
 interface CategoryPageProperties {
@@ -19,43 +19,36 @@ interface CategoryPageProperties {
 interface CategoryPageState {
     isUserLoggedIn: boolean;
     category?: CategoryType;
-    subcategories?: CategoryType[];
-    articles?: ArticleType[];
     message: string;
+    articles: ArticleType[];
     filters: {
         keywords: string;
-        priceMininum: number;
+        priceMinimum: number;
         priceMaximum: number;
         order: "name asc" | "name desc" | "price asc" | "price desc";
-        selectedFeatures: {
-            featureId: number;
-            value: string;
-        }[];
     };
-    features: {
-        featureId: number;
-        name: string;
-        values: string[];
-    }[];
 }
 
 interface CategoryDto {
     categoryId: number;
     name: string;
+    categories: {
+        categoryId: number;
+        name: string;
+    }[];
 }
 
 interface ArticleDto {
     articleId: number;
     name: string;
-    excerpt?: string;
-    description?: string;
-    articlePrices?: {
+    excerpt: string;
+    description: string;
+    articlePrices: {
         price: number;
-        createdAt: string;
-    }[],
-    photos?: {
+    }[];
+    photos: {
         imagePath: string;
-    }[],
+    }[];
 }
 
 export default class CategoryPage extends React.Component<CategoryPageProperties> {
@@ -67,210 +60,141 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
         this.state = {
             isUserLoggedIn: true,
             message: '',
+            articles: [],
             filters: {
                 keywords: '',
-                priceMininum: 0.01,
-                priceMaximum: 100000,
+                priceMinimum: 0.01,
+                priceMaximum: 9999.99,
                 order: "price asc",
-                selectedFeatures: [],
             },
-            features: [],
         };
     }
 
-    private setFeatures(features: any) {
-        const newState = Object.assign(this.state, {
-            features: features,
-        });
-
-        this.setState(newState);
-    }
-
-    private setLogginState(isLoggedIn: boolean) {
-        const newState = Object.assign(this.state, {
-            isUserLoggedIn: isLoggedIn,
-        });
-
-        this.setState(newState);
-    }
-
-    private setMessage(message: string) {
-        const newState = Object.assign(this.state, {
-            message: message,
-        });
-
-        this.setState(newState);
-    }
-
-    private setCategoryData(category: CategoryType) {
-        this.setState(Object.assign(this.state, {
-            category: category,
-        }));
-    }
-
-    private setSubcategories(subcategories: CategoryType[]) {
-        this.setState(Object.assign(this.state, {
-            subcategories: subcategories,
-        }));
-    }
-
-    private setArticles(articles: ArticleType[]) {
-        this.setState(Object.assign(this.state, {
-            articles: articles,
-        }));
-    }
-
-    render() {
-        if (this.state.isUserLoggedIn === false) {
-            return (
-                <Redirect to="/user/login" />
-            );
-        }
-
-        return (
-            <Container>
-             
-
-                <Card>
-                    <Card.Body>
-                        <Card.Title>
-                            <FontAwesomeIcon icon={ faListAlt } /> { this.state.category?.name }
-                        </Card.Title>
-
-                        { this.printOptionalMessage() }
-
-                        { this.showArticles() }
-
-                        <Row>
-                            <Col xs="12" md="4" lg="3">
-                                { this.printFilters() }
-                            </Col>
-
-                            <Col xs="12" md="8" lg="9">
-                                { this.showArticles() }
-                            </Col>
-                        </Row>
-                    </Card.Body>
-                </Card>
-            </Container>
-        );
-    }
-
-    private setNewFilter(newFilter: any) {
-        this.setState(Object.assign(this.state, {
-            filter: newFilter,
-        }));
-    }
-
-    private filterKeywordsChanged(event: React.ChangeEvent<HTMLInputElement>) {
-        this.setNewFilter(Object.assign(this.state.filters, {
+    private filterSearchKeywordsChanged(event: React.ChangeEvent<HTMLInputElement>) {
+        this.setState(Object.assign(this.state, Object.assign(this.state.filters, {
             keywords: event.target.value,
-        }));
+        })));
     }
 
-    private filterPriceMinChanged(event: React.ChangeEvent<HTMLInputElement>) {
-        this.setNewFilter(Object.assign(this.state.filters, {
-            priceMininum: Number(event.target.value),
-        }));
+    private filterPriceMinimumChanged(event: React.ChangeEvent<HTMLInputElement>) {
+        this.setState(Object.assign(this.state, Object.assign(this.state.filters, {
+            priceMinimum: Number(event.target.value),
+        })));
     }
 
-    private filterPriceMaxChanged(event: React.ChangeEvent<HTMLInputElement>) {
-        this.setNewFilter(Object.assign(this.state.filters, {
+    private filterPriceMaximumChanged(event: React.ChangeEvent<HTMLInputElement>) {
+        this.setState(Object.assign(this.state, Object.assign(this.state.filters, {
             priceMaximum: Number(event.target.value),
-        }));
+        })));
     }
 
-    private filterOrderChanged(event: React.ChangeEvent<HTMLSelectElement>) {
-        this.setNewFilter(Object.assign(this.state.filters, {
+    private filterSearchOrderChanged(event: React.ChangeEvent<HTMLSelectElement>) {
+        this.setState(Object.assign(this.state, Object.assign(this.state.filters, {
             order: event.target.value,
-        }));
-    }
-
-    private featureFilterChanged(event: React.ChangeEvent<HTMLInputElement>) {
-        const featureId = Number(event.target.dataset.featureId);
-        const value = event.target.value;
-
-        if (event.target.checked) {
-            this.addFeatureFilterValue(featureId, value);
-        } else {
-            this.removeFeatureFilterValue(featureId, value);
-        }
-    }
-
-    private addFeatureFilterValue(featureId: number, value: string) {
-        const newSelectedFeatures = [...this.state.filters.selectedFeatures ];
-
-        newSelectedFeatures.push({
-            featureId: featureId,
-            value: value,
-        });
-
-        this.setSelectedFeatures(newSelectedFeatures);
-    }
-
-    private removeFeatureFilterValue(featureId: number, value: string) {
-        const newSelectedFeatures = this.state.filters.selectedFeatures.filter(record => {
-            return !(record.featureId === featureId && record.value === value);
-        });
-
-        this.setSelectedFeatures(newSelectedFeatures);
-    }
-
-    private setSelectedFeatures(newSelectedFeatures: any) {
-        this.setState(Object.assign(this.state, {
-            filters: Object.assign(this.state.filters, {
-                selectedFeatures: newSelectedFeatures,
-            })
-        }));
-
-        console.log(this.state);
+        })));
     }
 
     private applyFilters() {
         this.getCategoryData();
     }
 
+    render() {
+        if (this.state.isUserLoggedIn === false) {
+            return (
+                <Redirect to="/" />
+            );
+        }
+
+        return (
+            <Container>
+                <Card>
+                    <Card.Body>
+                        <Card.Title>
+                            <FontAwesomeIcon icon={faListAlt} /> {this.state.category?.name}
+                        </Card.Title>
+
+                        <Row>
+                            
+                        </Row>
+
+                        {this.printArticles()}
+
+                        {this.printMessage()}
+                    </Card.Body>
+                </Card>
+            </Container>
+        );
+    }
+
+    private printArticles() {
+        return (
+            <Row className="mt-3">
+                <Col xs="12" md="3">
+                    { this.printFilters() }
+                </Col>
+                <Col xs="12" md="9">
+                    <Row>
+                        {
+                            this.state.articles.length === 0 ?
+                            <p>No articles found</p> :
+                            this.state.articles.map(article => (
+                                <SingleArticlePreview article={ article } />
+                            ))
+                        }
+                    </Row>
+                </Col>
+            </Row>
+        );
+    }
+
     private printFilters() {
         return (
             <>
                 <Form.Group>
-                    <Form.Label htmlFor="keywords">Search keywords:</Form.Label>
-                    <Form.Control type="text" id="keywords"
+                    <Form.Label htmlFor="search-keywords">
+                        Search keywords:
+                    </Form.Label>
+                    <Form.Control type="text" id="search-keywords"
                                   value={ this.state.filters.keywords }
-                                  onChange={ (e) => this.filterKeywordsChanged(e as any) } />
+                                  onChange={ (e) => this.filterSearchKeywordsChanged(e as any) } />
                 </Form.Group>
 
                 <Form.Group>
                     <Row>
                         <Col xs="12" sm="6">
-                            <Form.Label htmlFor="priceMin">Min. price:</Form.Label>
-                            <Form.Control type="number" id="priceMin"
-                                          step="0.01" min="0.01" max="99999.99"
-                                          value={ this.state.filters.priceMininum }
-                                          onChange={ (e) => this.filterPriceMinChanged(e as any) } />
+                            <Form.Label htmlFor="min-price">
+                                Min. price:
+                            </Form.Label>
+                            <Form.Control type="number" id="min-price"
+                                        min="0.01" step="0.01"
+                                        value={ this.state.filters.priceMinimum }
+                                        onChange={ (e) => this.filterPriceMinimumChanged(e as any) } />
                         </Col>
                         <Col xs="12" sm="6">
-                        <Form.Label htmlFor="priceMax">Max. price:</Form.Label>
-                            <Form.Control type="number" id="priceMax"
-                                          step="0.01" min="0.02" max="100000"
-                                          value={ this.state.filters.priceMaximum }
-                                          onChange={ (e) => this.filterPriceMaxChanged(e as any) } />
+                            <Form.Label htmlFor="max-price">
+                                Max. price:
+                            </Form.Label>
+                            <Form.Control type="number" id="max-price"
+                                        min="0.01" step="0.01"
+                                        value={ this.state.filters.priceMaximum }
+                                        onChange={ (e) => this.filterPriceMaximumChanged(e as any) } />
                         </Col>
                     </Row>
                 </Form.Group>
 
                 <Form.Group>
-                    <Form.Control as="select" id="sortOrder"
+                    <Form.Label htmlFor="search-order">
+                        Search keywords:
+                    </Form.Label>
+                    <Form.Control as="select" id="search-order"
                                   value={ this.state.filters.order }
-                                  onChange={ (e) => this.filterOrderChanged(e as any) }>
-                        <option value="name asc">Sort by name - ascending</option>
-                        <option value="name desc">Sort by name - descending</option>
-                        <option value="price asc">Sort by price - ascending</option>
-                        <option value="price desc">Sort by price - descending</option>
+                                  onChange={ (e) => this.filterSearchOrderChanged(e as any) }>
+                        <option value="name asc">Sort by name ascending</option>
+                        <option value="name desc">Sort by name descending</option>
+                        <option value="price asc">Sort by price ascending</option>
+                        <option value="price desc">Sort by price descending</option>
                     </Form.Control>
                 </Form.Group>
-
-                { this.state.features.map(this.printFeatureFilterComponent, this) }
 
                 <Form.Group>
                     <Button variant="primary" block onClick={ () => this.applyFilters() }>
@@ -281,74 +205,33 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
         );
     }
 
-    private printFeatureFilterComponent(feature: { featureId: number; name: string; values: string[]; }) {
-        return (
-            <Form.Group key={ 'Feature Filter ' + feature.featureId }>
-                <Form.Label><strong>{ feature.name }</strong></Form.Label>
-                { feature.values.map(value => this.printFeatureFilterCheckBox(feature, value), this) }
-            </Form.Group>
-        );
-    }
-
-    private printFeatureFilterCheckBox(feature: any, value: string) {
-        return (
-            <Form.Check type="checkbox" label={ value }
-                        value={ value }
-                        data-feature-id={ feature.featureId }
-                        onChange={ (event: any) => this.featureFilterChanged(event as any) }
-                        key={ 'Feature Check Box ' + feature.featureId + ' with ' + value }
-                        />
-        )
-    }
-
-    private printOptionalMessage() {
-        if (this.state.message === '') {
+    private printMessage() {
+        if (this.state.message) {
             return;
         }
 
         return (
-            <Card.Text>
-                { this.state.message }
-            </Card.Text>
+            <p>{ this.state.message }</p>
         );
     }
 
-
-    private singleCategory(category: CategoryType) {
+    private renderSingleCategory(category: CategoryType) {
         return (
-            <Col lg="3" md="4" sm="6" xs="12" key={ 'Category ' + category.categoryId }>
-                <Card className="mb-3">
+            <Col xs="12" sm="6" md="4" lg="3">
+                <Card className="mt-3">
                     <Card.Body>
                         <Card.Title as="p">
-                            { category.name }
+                            <strong>
+                                {category.name}
+                            </strong>
                         </Card.Title>
-                        <Link to={ `/category/${ category.categoryId }` }
-                              className="btn btn-primary btn-block btn-sm">
-                            Open category
+                        <Link to={`/category/${category.categoryId}/`}
+                            className="btn btn-sm btn-primary btn-block">
+                            Click to open
                         </Link>
                     </Card.Body>
                 </Card>
             </Col>
-        );
-    }
-
-    private showArticles() {
-        if (this.state.articles?.length === 0) {
-            return (
-                <div>There are no articles in this category.</div>
-            );
-        }
-
-        return (
-            <Row>
-                { this.state.articles?.map(this.singleArticle) }
-            </Row>
-        );
-    }
-
-    private singleArticle(article: ArticleType) {
-        return (
-            <SingleArticlePreview article={article} key={ 'Article ' + article.articleId } />
         );
     }
 
@@ -364,105 +247,87 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
         this.getCategoryData();
     }
 
+    private setUserLoggedInState(state: boolean) {
+        this.setState(Object.assign(this.state, {
+            isUserLoggedIn: state,
+        }));
+    }
+
+    private setCategoryState(category: CategoryType) {
+        this.setState(Object.assign(this.state, {
+            category: category,
+        }));
+    }
+
+    private setMessageState(message: string) {
+        this.setState(Object.assign(this.state, {
+            message: message,
+        }));
+    }
+
+    private setArticlesState(articles: ArticleType[]) {
+        this.setState(Object.assign(this.state, {
+            articles: articles,
+        }));
+    }
+
     private getCategoryData() {
-        api('api/category/' + this.props.match.params.cId, 'get', {})
-        .then((res: ApiResponse) => {
-            if (res.status === 'login') {
-                return this.setLogginState(false);
-            }
+        api('/api/category/' + this.props.match.params.cId, 'get', {})
+            .then((res: ApiResponse) => {
+                if (res.status === 'error' || res.status === 'login') {
+                    this.setUserLoggedInState(false);
+                    return;
+                }
 
-            if (res.status === 'error') {
-                return this.setMessage('Request error. Please try to refresh the page.');
-            }
+                const data: CategoryDto = res.data;
 
-            const categoryData: CategoryType = {
-                categoryId: res.data.categoryId,
-                name: res.data.name,
-            };
+                const categoryData: CategoryType = {
+                    categoryId: data.categoryId,
+                    name: data.name,
+                 
+                };
 
-            this.setCategoryData(categoryData);
-
+                this.setCategoryState(categoryData);
+            });
 
         const orderParts = this.state.filters.order.split(' ');
         const orderBy = orderParts[0];
         const orderDirection = orderParts[1].toUpperCase();
 
-        const featureFilters: any[] = [];
-
-        for (const item of this.state.filters.selectedFeatures) {
-            let found = false;
-            let foundRef = null;
-
-            for (const featureFilter of featureFilters) {
-                if (featureFilter.featureId === item.featureId) {
-                    found = true;
-                    foundRef = featureFilter;
-                    break;
-                }
-            }
-
-            if (!found) {
-                featureFilters.push({
-                    featureId: item.featureId,
-                    values: [ item.value ],
-                });
-            } else {
-                foundRef.values.push(item.value);
-            }
-        }
-
-        api('api/article/search/', 'post', {
+        api('/api/article/search/', 'post', {
             categoryId: Number(this.props.match.params.cId),
             keywords: this.state.filters.keywords,
-            priceMin: this.state.filters.priceMininum,
+            priceMin: this.state.filters.priceMinimum,
             priceMax: this.state.filters.priceMaximum,
-            features: featureFilters,
+            features: [],
             orderBy: orderBy,
             orderDirection: orderDirection,
+            page: 0,
+            itemsPerPage: 75,
         })
         .then((res: ApiResponse) => {
-            if (res.status === 'login') {
-                return this.setLogginState(false);
-            }
-
-            if (res.status === 'error') {
-                return this.setMessage('Request error. Please try to refresh the page.');
+            if (res.status === 'error' || res.status === 'login') {
+                return this.setUserLoggedInState(true);
             }
 
             if (res.data.statusCode === 0) {
-                this.setMessage('');
-                this.setArticles([]);
+                this.setArticlesState([]);
+                this.setMessageState('There are no articles here.');
                 return;
             }
 
-            const articles: ArticleType[] =
-            res.data.map((article: ArticleDto) => {
-                const object: ArticleType = {
-                    articleId: article.articleId,
-                    name: article.name,
-                    excerpt: article.excerpt,
-                    description: article.description,
-                    imageUrl: '',
-                    price: 0,
-                };
+            const data: ArticleDto[] = res.data;
 
-                if (article.photos !== undefined && article.photos?.length > 0) {
-                    object.imageUrl = article.photos[article.photos?.length-1].imagePath;
-                }
+            const articles: ArticleType[] = data.map(article => ({
+                articleId: article.articleId,
+                name: article.name,
+                excerpt: article.excerpt,
+                description: article.description,
+                imageUrl: article.photos[0].imagePath,
+                price: article.articlePrices[article.articlePrices.length-1].price,
+            }));
 
-                if (article.articlePrices !== undefined && article.articlePrices?.length > 0) {
-                    object.price = article.articlePrices[article.articlePrices?.length-1].price;
-                }
-
-                return object;
-            });
-
-            this.setArticles(articles);
-        });
-
-        
-    });
-}
-
-   
+            this.setArticlesState(articles);
+        })
+    }
 }
