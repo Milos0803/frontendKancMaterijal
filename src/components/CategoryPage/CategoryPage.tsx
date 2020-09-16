@@ -114,7 +114,7 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
                         </Card.Title>
 
                         <Row>
-                            
+
                         </Row>
 
                         {this.printArticles()}
@@ -284,7 +284,7 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
                 const categoryData: CategoryType = {
                     categoryId: data.categoryId,
                     name: data.name,
-                 
+
                 };
 
                 this.setCategoryState(categoryData);
@@ -302,8 +302,8 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
             features: [],
             orderBy: orderBy,
             orderDirection: orderDirection,
-            page: 0,
-            itemsPerPage: 75,
+            page: 1,
+            itemsPerPage: 50,
         })
         .then((res: ApiResponse) => {
             if (res.status === 'error' || res.status === 'login') {
@@ -323,8 +323,8 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
                 name: article.name,
                 excerpt: article.excerpt,
                 description: article.description,
-                imageUrl: article.photos[0].imagePath,
-                price: article.articlePrices[article.articlePrices.length-1].price,
+                imageUrl: article.photos ? article.photos[0].imagePath : '',
+                price: article.articlePrices.length ? article.articlePrices[0].price : 0,
             }));
 
             this.setArticlesState(articles);

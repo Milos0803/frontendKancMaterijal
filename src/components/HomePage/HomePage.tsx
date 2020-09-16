@@ -117,6 +117,6 @@ export default class HomePage extends React.Component {
   }
 
   componentDidUpdate() {
-    this.getCategories();
+    //this.getCategories();
   }
 }
