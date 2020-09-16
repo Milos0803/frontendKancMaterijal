@@ -5,15 +5,15 @@ import { faSignInAlt } from '@fortawesome/free-solid-svg-icons';
 import api, { ApiResponse, saveToken, saveRefreshToken } from '../../api/api';
 import { Redirect } from 'react-router-dom';
 
-interface AdminLoginPageState {
+interface UserLoginPageState {
     isLoggedIn: boolean;
     message: string;
-    username: string;
+    email: string;
     password: string;
 }
 
-export default class AdminLoginPage extends React.Component {
-    state: AdminLoginPageState;
+export default class UserLoginPage extends React.Component {
+    state: UserLoginPageState;
 
     constructor(props: Readonly<{}>) {
         super(props);
@@ -21,7 +21,7 @@ export default class AdminLoginPage extends React.Component {
         this.state = {
             isLoggedIn: false,
             message: '',
-            username: '',
+            email: '',
             password: '',
         };
     }
@@ -29,8 +29,8 @@ export default class AdminLoginPage extends React.Component {
     private handleFormInputChange(event: React.ChangeEvent<HTMLInputElement>) {
         let stateFieldName = '';
 
-        if (event.target.id === 'username') {
-            stateFieldName = 'username';
+        if (event.target.id === 'email') {
+            stateFieldName = 'email';
         } else if (event.target.id === 'password') {
             stateFieldName = 'password';
         }
@@ -60,11 +60,11 @@ export default class AdminLoginPage extends React.Component {
 
     private doLogin() {
         const data = {
-            username: this.state.username,
+            email: this.state.email,
             password: this.state.password,
         };
 
-        api('/auth/administrator/login', 'post', data)
+        api('/auth/user/login', 'post', data)
             .then((res: ApiResponse) => {
                 if (res.status === 'error') {
                     this.setMessage('There was an error. Please try again!');
@@ -99,14 +99,14 @@ export default class AdminLoginPage extends React.Component {
                     <Card>
                         <Card.Body>
                             <Card.Title>
-                                <FontAwesomeIcon icon={faSignInAlt} /> Administrator Login
+                                <FontAwesomeIcon icon={faSignInAlt} /> User Login
                             </Card.Title>
 
                             <Form>
                                 <Form.Group>
-                                    <Form.Label htmlFor="username">Username:</Form.Label>
-                                    <Form.Control type="username" id="username"
-                                        value={this.state.username}
+                                    <Form.Label htmlFor="email">Email:</Form.Label>
+                                    <Form.Control type="email" id="email"
+                                        value={this.state.email}
                                         onChange={(event) => this.handleFormInputChange(event as any)} />
                                 </Form.Group>
                                 <Form.Group>

@@ -13,11 +13,13 @@ import { HashRouter, Switch, Route } from 'react-router-dom';
 import ContactPage from './components/ContactPage/ContactPage';
 import AdministratorLoginPage from './components/AdministratorLoginPage/AdministratorLoginPage';
 import CategoryPage from './components/CategoryPage/CategoryPage';
+import UserLoginPage from './components/UserLoginPage/UserLoginPage';
 
 
 const menuItems = [
   new MainMenuItem("Home", "/"),
   new MainMenuItem("Contact", "/contact/"),
+  new MainMenuItem("User login", "/user/login/"),
   new MainMenuItem("Admin login", "/administrator/login/"),
   
 ];
@@ -29,6 +31,7 @@ ReactDOM.render(
       <Switch>
         <Route exact path="/" component={ HomePage } />
         <Route path="/contact" component={ ContactPage } />
+        <Route path="/user/login" component={ UserLoginPage } />
         <Route path="/administrator/login" component={ AdministratorLoginPage} />
         <Route path="/category/:cId" component={ CategoryPage } />
       </Switch>
