@@ -11,16 +11,12 @@ import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
 import { MainMenu, MainMenuItem } from './components/MainMenu/MainMenu';
 import { HashRouter, Switch, Route } from 'react-router-dom';
 import ContactPage from './components/ContactPage/ContactPage';
-import UserLoginPage from './components/UserLoginPage/UserLoginPage';
 import CategoryPage from './components/CategoryPage/CategoryPage';
-import UserRegistrationPage from './components/UserRegistrationPage/UserRegistrationPage';
 import AdminLoginPage from './components/AdministratorLoginPage/AdministratorLoginPage';
 
 const menuItems = [
   new MainMenuItem("Home", "/"),
   new MainMenuItem("Contact", "/contact/"),
-  new MainMenuItem("Log in", "/user/login/"),
-  new MainMenuItem("Register", "/user/register/"),
   new MainMenuItem("ADMINISTRATOR", "/administrator/login/"),
 ];
 
@@ -31,8 +27,6 @@ ReactDOM.render(
       <Switch>
         <Route exact path="/" component={ HomePage } />
         <Route path="/contact" component={ ContactPage } />
-        <Route path="/user/login" component={ UserLoginPage } />
-        <Route path="/user/register" component={ UserRegistrationPage } />
         <Route path="/category/:cId" component={ CategoryPage } />
         <Route path="/administrator/login" component={ AdminLoginPage } />
       </Switch>
